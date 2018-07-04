@@ -16,22 +16,28 @@ export default new Router({
     },
     {
       path: '/recommend',
-      component: 'Recommend',
+      name: 'Recommend',
       component: Recommend
     },
     {
       path: '/singer',
-      component: 'Singer',
-      component: Singer
+      name: 'Singer',
+      component: Singer,
+      children:[
+        {
+          path:':id',
+          component:SingerDetail
+        }
+      ]
     },
     {
       path: '/rank',
-      component: 'Rank',
+      name: 'Rank',
       component: Rank
     },
     {
       path: '/search',
-      component: 'Search',
+      name: 'Search',
       component: Search
     }
     //,
