@@ -4,7 +4,7 @@ const state={
 
   },
   playing:false,
-  fullScreem:false,
+  fullScreen:false,
   playList:[],
   sequenceList:[],
   mode:playMode.sequence,
