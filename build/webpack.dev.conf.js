@@ -68,6 +68,21 @@ const devWebpackConfig = merge(baseWebpackConfig, {
         }).catch((e) => {
           console.log(e)
         })
+      });
+      app.get('/api/getMusicUrl', function (req, res) {
+        var url = 'https://c.y.qq.com/base/fcgi-bin/fcg_music_express_mobile3.fcg'
+        axios.get(url, {
+          headers: {
+            referer: 'https://y.qq.com/portal/player.html',
+            host: 'c.y.qq.com'
+          },
+          params: req.query
+        }).then((response) => {
+          //console.log(response.data)
+          res.json(response.data)
+        }).catch((e) => {
+          console.log(e)
+        })
       })
     }
   },

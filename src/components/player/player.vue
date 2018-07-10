@@ -1,6 +1,6 @@
 <template>
     <div class="player" v-show="playList.length>0">
-        <transition name="normal" @enter="enter" @after-enter="afterEnter" @leave="leave" @after-leave="leaveEnter">
+        <transition name="normal" @enter="enter" @after-enter="afterEnter" @leave="leave" @after-leave="fterLeave">
             <div class="normal-player" v-show="fullScreen">
                 <div class="background">
                     <img width="100%" height="100%" :src="currentSong.image">
@@ -82,6 +82,8 @@
                 </div>
             </div>
         </transition>
+        <audio ref="audio" ></audio> 
+        <!-- :src="currentSong.url" -->
     </div>
 </template>
 
@@ -89,9 +91,16 @@
 import { mapGetters, mapMutations } from "vuex";
 import animations from "create-keyframe-animation";
 import { prefixStyle } from "common/js/dom";
+import { getMusicUrl } from "api/song";
+import { ERR_OK } from "api/config";
 
 const transform = prefixStyle("transform");
 export default {
+  data() {
+    return {
+      url: ""
+    };
+  },
   methods: {
     back() {
       this.setFullScreen(false);
@@ -115,10 +124,10 @@ export default {
       };
 
       animations.registerAnimation({
-        name: "music",
+        name: "move",
         animation,
         presets: {
-          duration: 400,
+          duration: 500,
           easing: "linear"
         }
       });
@@ -126,7 +135,7 @@ export default {
       animations.runAnimation(this.$refs.cdWrapper, "move", done);
     },
     afterEnter() {
-      animations.unregisterAnimation("music");
+      animations.unregisterAnimation("move");
       this.$refs.cdWrapper.style.animation = "";
     },
     leave(el, done) {
@@ -137,7 +146,7 @@ export default {
       ] = `translate3d(${x}px,${y}px,0) scale(${scale})`;
       this.$refs.cdWrapper.addEventListener("transitionend", done);
     },
-    leaveEnter() {
+    fterLeave() {
       this.$refs.cdWrapper.style.transition = "";
       this.$refs.cdWrapper.style[transform] = "";
     },
@@ -156,12 +165,39 @@ export default {
         scale
       };
     },
+    _musicPlay() {
+      if (!this.currentSong.url) {
+        getMusicUrl(this.currentSong).then(res => {
+          if (res.code === ERR_OK) {
+            this.$refs.audio.url = res.data.musicUrl;
+            setTimeout(() => {
+              this.$refs.audio.play();
+            },20);
+
+            //   let song=this.currentSong;
+            //   song.url=res.data.musicUrl;
+            //   console.log(song)
+            //console.log(res);
+            //this.currentSong.url = res.data.musicUrl;
+          }
+        });
+      } else {
+        this.$refs.audio.play();
+      }
+    },
     ...mapMutations({
       setFullScreen: "SET_FULL_SCREEN"
     })
   },
   computed: {
     ...mapGetters(["fullScreen", "playList", "currentSong"])
+  },
+  watch: {
+    currentSong() {
+      this.$nextTick(() => {
+        this._musicPlay();
+      });
+    }
   },
   mounted() {}
 };
