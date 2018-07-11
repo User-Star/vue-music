@@ -1,6 +1,6 @@
 <template>
     <div class="player" v-show="playList.length>0">
-        <transition name="normal" @enter="enter" @after-enter="afterEnter" @leave="leave" @after-leave="fterLeave">
+        <transition name="normal" @enter="enter" @after-enter="afterEnter" @leave="leave" @after-leave="afterLeave">
             <div class="normal-player" v-show="fullScreen">
                 <div class="background">
                     <img width="100%" height="100%" :src="currentSong.image">
@@ -15,7 +15,7 @@
                 <div class="middle">
                     <div class="middle-l" ref="middleL">
                         <div class="cd-wrapper" ref="cdWrapper">
-                            <div class="cd">
+                            <div class="cd" :class="cdCls">
                                 <img class="image" :src="currentSong.image">
                             </div>
                         </div>
@@ -47,14 +47,14 @@
                         <div class="icon i-left">
                             <i class="icon-sequence"></i>
                         </div>
-                        <div class="icon i-left">
-                            <i class="icon-prev"></i>
+                        <div class="icon i-left" :class="disableCls">
+                            <i @click="prev" class="icon-prev"></i>
                         </div>
-                        <div class="icon i-center">
-                            <i class="icon-play"></i>
+                        <div class="icon i-center" :class="disableCls">
+                            <i @click="togglePlaying" :class="playIcon"></i>
                         </div>
-                        <div class="icon i-right">
-                            <i class="icon-next"></i>
+                        <div class="icon i-right" :class="disableCls">
+                            <i @click="next" class="icon-next"></i>
                         </div>
                         <div class="icon i-right">
                             <i class="icon icon-not-favorite"></i>
@@ -66,15 +66,16 @@
         <transition name="mini">
             <div class="mini-player" v-show="!fullScreen" @click="open">
                 <div class="icon">
-                    <img width="40" height="40" :src="currentSong.image">
+                    <img width="40" height="40" :class="cdCls" :src="currentSong.image">
                 </div>
                 <div class="text">
                     <h2 class="name" v-html="currentSong.name"></h2>
                     <p class="desc" v-html="currentSong.singer"></p>
                 </div>
                 <div class="control">
+                    <i @click.stop="togglePlaying" :class="miniIcon"></i>
                     <!-- <progress-circle>
-                    <i class="icon-mini"></i>
+                    
                 </progress-circle> -->
                 </div>
                 <div class="control">
@@ -82,7 +83,7 @@
                 </div>
             </div>
         </transition>
-        <audio ref="audio" ></audio> 
+        <audio :src="currentSong.url" @canplay="ready" @error="error" ref="audio"></audio>
         <!-- :src="currentSong.url" -->
     </div>
 </template>
@@ -96,12 +97,13 @@ import { ERR_OK } from "api/config";
 
 const transform = prefixStyle("transform");
 export default {
-  data() {
-    return {
-      url: ""
-    };
-  },
   methods: {
+    data() {
+      return {
+        songReady: false
+      };
+    },
+
     back() {
       this.setFullScreen(false);
     },
@@ -146,9 +148,53 @@ export default {
       ] = `translate3d(${x}px,${y}px,0) scale(${scale})`;
       this.$refs.cdWrapper.addEventListener("transitionend", done);
     },
-    fterLeave() {
+    afterLeave() {
       this.$refs.cdWrapper.style.transition = "";
       this.$refs.cdWrapper.style[transform] = "";
+    },
+    togglePlaying() {
+      this.setPlayingState(!this.playing);
+    },
+    _play() {
+      setTimeout(() => {
+        this.$refs.audio.play();
+      }, 20);
+    },
+    next() {
+      if (!this.songReady) {
+        return;
+      }
+      console.log(this.songReady)
+      let index = this.currentIndex + 1;
+      if (index === this.playList.length) {
+        index = 0;
+      }
+      this.setCurrentIndex(index);
+      if (!this.playing) {
+        this.togglePlaying();
+      }
+      this.songReady = false;
+    },
+    prev() {
+      if (!this.songReady) {
+        return;
+      }
+      let index = this.currentIndex - 1;
+      if (index === -1) {
+        index = this.playList.length - 1;
+      }
+      this.setCurrentIndex(index);
+      if (!this.playing) {
+        this.togglePlaying();
+      }
+
+      this.songReady = false;
+    },
+    ready() {
+      this.songReady = true;
+    },
+    error() {
+      this.songReady = true;
     },
     _getPosAndScale() {
       const targetWidth = 40;
@@ -169,16 +215,8 @@ export default {
       if (!this.currentSong.url) {
         getMusicUrl(this.currentSong).then(res => {
           if (res.code === ERR_OK) {
-            this.$refs.audio.url = res.data.musicUrl;
-            setTimeout(() => {
-              this.$refs.audio.play();
-            },20);
-
-            //   let song=this.currentSong;
-            //   song.url=res.data.musicUrl;
-            //   console.log(song)
-            //console.log(res);
-            //this.currentSong.url = res.data.musicUrl;
+            this.setMusicUrl(res.data.musicUrl);
+            this._play();
           }
         });
       } else {
@@ -186,16 +224,44 @@ export default {
       }
     },
     ...mapMutations({
-      setFullScreen: "SET_FULL_SCREEN"
+      setFullScreen: "SET_FULL_SCREEN",
+      setMusicUrl: "SET_MUSIC_URL",
+      setPlayingState: "SET_PLAYING_STATE",
+      setCurrentIndex: "SET_CURRENT_INDEX"
     })
   },
   computed: {
-    ...mapGetters(["fullScreen", "playList", "currentSong"])
+    cdCls() {
+      return this.playing ? "play" : "play pause";
+    },
+    playIcon() {
+      return this.playing ? "icon-pause" : "icon-play";
+    },
+    miniIcon() {
+      return this.playing ? "icon-pause-mini" : "icon-play-mini";
+    },
+    disableCls() {
+      return this.songReady ? "" : "disable";
+    },
+    ...mapGetters([
+      "fullScreen",
+      "playList",
+      "currentSong",
+      "playing",
+      "currentIndex"
+    ])
   },
   watch: {
     currentSong() {
       this.$nextTick(() => {
         this._musicPlay();
+      });
+    },
+    playing(newPlaying) {
+      const sudio = this.$refs.audio;
+      if (!this.currentSong.url) return;
+      this.$nextTick(() => {
+        newPlaying ? sudio.play() : sudio.pause();
       });
     }
   },
