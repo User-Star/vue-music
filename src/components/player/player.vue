@@ -32,16 +32,16 @@
                 </scroll> -->
                 </div>
                 <div class="bottom">
-                    <div class="dot-wrapper">
+                    <!-- <div class="dot-wrapper">
                         <span class="dot"></span>
                         <span class="dot"></span>
-                    </div>
+                    </div> -->
                     <div class="progress-wrapper">
-                        <span class="time time-l"></span>
+                        <span class="time time-l">{{format(currentTime)}}</span>
                         <div class="progress-bar-wrapper">
-                            <!-- <progress-bar></progress-bar> -->
+                            <progress-bar :percent="percent" @percentChange="onProgressBarChange"></progress-bar>
                         </div>
-                        <span class="time time-r"></span>
+                        <span class="time time-r">{{format(currentSong.duration)}}</span>
                     </div>
                     <div class="operators">
                         <div class="icon i-left">
@@ -83,7 +83,7 @@
                 </div>
             </div>
         </transition>
-        <audio :src="currentSong.url" @canplay="ready" @error="error" ref="audio"></audio>
+        <audio :src="currentSong.url" @canplay="ready" @error="error" @timeupdate="updateTime" ref="audio"></audio>
         <!-- :src="currentSong.url" -->
     </div>
 </template>
@@ -94,16 +94,17 @@ import animations from "create-keyframe-animation";
 import { prefixStyle } from "common/js/dom";
 import { getMusicUrl } from "api/song";
 import { ERR_OK } from "api/config";
+import ProgressBar from "base/progress-bar/progress-bar";
 
 const transform = prefixStyle("transform");
 export default {
+  data() {
+    return {
+      songReady: false,
+      currentTime: "0:34"
+    };
+  },
   methods: {
-    data() {
-      return {
-        songReady: false
-      };
-    },
-
     back() {
       this.setFullScreen(false);
     },
@@ -164,7 +165,6 @@ export default {
       if (!this.songReady) {
         return;
       }
-      console.log(this.songReady)
       let index = this.currentIndex + 1;
       if (index === this.playList.length) {
         index = 0;
@@ -196,6 +196,34 @@ export default {
     error() {
       this.songReady = true;
     },
+
+    updateTime(e) {
+      this.currentTime = e.target.currentTime;
+    },
+    format(interval) {
+      interval = interval | 0;
+      const minute = (interval / 60) | 0;
+      const second = this._pad(interval % 60);
+      return `${minute}:${second}`;
+    },
+    _pad(num, n = 2) {
+      let len = num.toString().length;
+      while (len < n) {
+        num = "0" + num;
+        len++;
+      }
+      return num;
+    },
+    onProgressBarChange(percent) {
+        const currentTime = this.currentSong.duration * percent
+        this.$refs.audio.currentTime = currentTime
+        if (!this.playing) {
+          this.togglePlaying()
+        }
+        // if (this.currentLyric) {
+        //   this.currentLyric.seek(currentTime * 1000)
+        // }
+      },
     _getPosAndScale() {
       const targetWidth = 40;
       const paddingLeft = 40;
@@ -243,6 +271,9 @@ export default {
     disableCls() {
       return this.songReady ? "" : "disable";
     },
+    percent() {
+      return this.currentTime / this.currentSong.duration;
+    },
     ...mapGetters([
       "fullScreen",
       "playList",
@@ -265,7 +296,12 @@ export default {
       });
     }
   },
-  mounted() {}
+  mounted() {
+    //console.log(this.hello);
+  },
+  components: {
+    ProgressBar
+  }
 };
 </script>
 
