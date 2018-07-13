@@ -1,9 +1,9 @@
-import {getLyric} from 'api/song'
-import {ERR_OK} from 'api/config'
-import {Base64} from 'js-base64'
+import { getLyric } from 'api/song'
+import { ERR_OK } from 'api/config'
+import { Base64 } from 'js-base64'
 
 export default class Song {
-  constructor({id, mid, singer, name, album, duration, image, url}) {
+  constructor({ id, mid, singer, name, album, duration, image, url }) {
     this.id = id
     this.mid = mid
     this.singer = singer
@@ -13,14 +13,29 @@ export default class Song {
     this.image = image
     this.url = url
   }
+  getLyric() {
+    if (this.lyric) {
+      return Promise.resolve(this.lyric)
+    }
+    return new Promise((resolve, reject) => {
+      getLyric(this.mid).then((res) => {
+        if (res.retcode === ERR_OK) {
+          this.lyric = Base64.decode(res.lyric)
+          resolve(this.lyric)
+        } else {
+          reject('no lyric')
+        }
+      })
+    })
+  }
 }
 
-export function createSong(musicData){
+export function createSong(musicData) {
   return new Song({
-    id:musicData.songid,
-    mid:musicData.songmid,
-    singer:filterSinger(musicData.singer),
-    name:musicData.songname,
+    id: musicData.songid,
+    mid: musicData.songmid,
+    singer: filterSinger(musicData.singer),
+    name: musicData.songname,
     album: musicData.albumname,
     duration: musicData.interval,
     image: `https://y.gtimg.cn/music/photo_new/T002R300x300M000${musicData.albummid}.jpg?max_age=2592000`,
@@ -64,10 +79,10 @@ export function createSong(musicData){
 //http://dl.stream.qqmusic.qq.com/C400000fcbn33tw0lQ.m4a?vkey=EAFD46AB840927616142F7FA7E852772B78A31CD047C4397869549B62BC0F81FB95AA42303D7A71BE7C226D80C78297202267C0F8D641947&guid=3360709558&uin=0&fromtag=66
 
 //http://dl.stream.qqmusic.qq.com/C400000fcbn33tw0lQ.m4a?vkey=DC9B7DEB22C1C42BDAEC45D0E69F672E9E520D54E81BA4B300418957EC6B86B3916902C82B6AA5210D7264C85891F711987DABF0C0F6C6A7&guid=3360709558&uin=736169136&fromtag=66
-function filterSinger(singer){
-  let ret=[];
-  if(!singer)return''
-  singer.forEach((s)=>{
+function filterSinger(singer) {
+  let ret = [];
+  if (!singer) return ''
+  singer.forEach((s) => {
     ret.push(s.name)
   });
   return ret.join('/')

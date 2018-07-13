@@ -7,9 +7,9 @@ export function getLyric(mid) {
   const data = Object.assign({}, commonParams, {
     songmid: mid,
     platform: 'yqq',
+    g_tk: 1465812678,
     hostUin: 0,
     needNewCode: 0,
-    categoryId: 10000000,
     pcachetime: +new Date(),
     format: 'json'
   })
