@@ -105,7 +105,9 @@ const devWebpackConfig = merge(baseWebpackConfig, {
           res.json(ret)
         }).catch((e) => {
           console.log(e)
-        })
+        }),
+        //https://c.y.qq.com/qzone/fcg-bin/fcg_ucc_getcdinfo_byids_cp.fcg?type=1&json=1&utf8=1&onlysong=0&disstid=4212590712&format=jsonp&g_tk=5381&jsonpCallback=playlistinfoCallback&loginUin=736169136&hostUin=0&format=jsonp&inCharset=utf8&outCharset=utf-8&notice=0&platform=yqq&needNewCode=0
+        app.get()
       })
     }
   },

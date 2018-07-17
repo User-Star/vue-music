@@ -2,26 +2,26 @@ import {mapGetters, mapMutations, mapActions} from 'vuex'
 import {playMode} from 'common/js/config'
 import {shuffle} from 'common/js/util'
 
-export const playlistMixin = {
+export const playListMixin = {
   computed: {
     ...mapGetters([
-      'playlist'
+      'playList'
     ])
   },
   mounted() {
-    this.handlePlaylist(this.playlist)
+    this.handlePlayList(this.playList)
   },
   activated() {
-    this.handlePlaylist(this.playlist)
+    this.handlePlayList(this.playList)
   },
   watch: {
-    playlist(newVal) {
-      this.handlePlaylist(newVal)
+    playList(newVal) {
+      this.handlePlayList(newVal)
     }
   },
   methods: {
-    handlePlaylist() {
-      throw new Error('component must implement handlePlaylist method')
+    handlePlayList() {
+      throw new Error('component must implement handlePlayList method')
     }
   }
 }
@@ -33,7 +33,7 @@ export const playerMixin = {
     },
     ...mapGetters([
       'sequenceList',
-      'playlist',
+      'playList',
       'currentSong',
       'mode',
       'favoriteList'

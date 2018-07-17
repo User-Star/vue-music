@@ -89,6 +89,9 @@ import Loading from 'base/loading/loading'
       scroll(pos) {
         this.scrollY = pos.y
       },
+      refresh(){
+        this.$refs.listView.refresh()
+      },
       _scrollTo(index){
         if (!index && index !== 0) {
           return
