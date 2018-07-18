@@ -70,7 +70,6 @@ export default {
     _getRocommemd() {
       getRecommend().then(res => {
         if (res.code === ERR_OK) {
-          //console.log(res);s
           this.recommemds = res.data.slider;
         }
       });
@@ -78,11 +77,11 @@ export default {
     _getMusicList() {
       getDiscList().then(res => {
         if (res.code === ERR_OK) {
-          //console.log(res.data);
           this.discList = res.data.list;
         }
       });
     },
+
     loadImage() {
       if (!this.checkLoaded) {
         this.$refs.scroll.refresh();
