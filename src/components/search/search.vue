@@ -1,11 +1,76 @@
 <template>
   <div class="search">
-    search
+    <div class="search-box-wrapper">
+      <search-box ref="searchBox"></search-box>
+    </div>
+    <div ref="shortcutWrapper" class="shortcut-wrapper">
+      <div  ref="shortcut" class="shortcut" >
+        <div>
+          <div class="hot-key">
+            <h1 class="title">热门搜索</h1>
+            <ul>
+              <li @click="addQuery(item.k)" class="item" v-for="item in hotKey" :key="item.n">
+                <span>{{item.k}}</span>
+              </li>
+            </ul>
+          </div>
+          <!-- <div class="search-history" v-show="searchHistory.length">
+            <h1 class="title">
+              <span class="text">搜索历史</span>
+              <span @click="showConfirm" class="clear">
+                <i class="icon-clear"></i>
+              </span>
+            </h1>
+            <search-list @delete="deleteSearchHistory" @select="addQuery" :searches="searchHistory"></search-list>
+          </div> -->
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
-export default {};
+import SearchBox from "base/search-box/search-box";
+import { getHotKey } from "api/search";
+import { ERR_OK } from "api/config";
+export default {
+  data() {
+    return {
+      hotKey: []
+    };
+  },
+  created() {
+    this._getHotKey();
+  },
+  components: {
+    SearchBox
+  },
+  methods: {
+    // handlePlaylist(playlist) {
+    //   const bottom = playlist.length > 0 ? "60px" : "";
+
+    //   this.$refs.searchResult.style.bottom = bottom;
+    //   this.$refs.suggest.refresh();
+
+    //   this.$refs.shortcutWrapper.style.bottom = bottom;
+    //   this.$refs.shortcut.refresh();
+    // },
+    // showConfirm() {
+    //   this.$refs.confirm.show();
+    // },
+    addQuery(query){
+      this.$refs.searchBox.setQuery(query)
+    },
+    _getHotKey() {
+      getHotKey().then(res => {
+        if (res.code === ERR_OK) {
+          this.hotKey = res.data.hotkey.slice(0, 10);
+        }
+      });
+    },
+    //...mapActions(["clearSearchHistory"])
+  }
+};
 </script>
 
 <style lang="stylus" rel="stylesheet/stylus">
