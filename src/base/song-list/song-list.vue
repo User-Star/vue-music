@@ -27,7 +27,7 @@ export default {
     }
   },
   created(){
-    console.log(this.rank)
+    //console.log(this.rank)
   },
   methods: {
     selectItem(item,index){

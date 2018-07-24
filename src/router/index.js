@@ -20,10 +20,10 @@ export default new Router({
       path: '/recommend',
       name: 'Recommend',
       component: Recommend,
-      children:[
+      children: [
         {
-          path:':id',
-          component:Disc
+          path: ':id',
+          component: Disc
         }
       ]
     },
@@ -31,10 +31,10 @@ export default new Router({
       path: '/singer',
       name: 'Singer',
       component: Singer,
-      children:[
+      children: [
         {
-          path:':id',
-          component:SingerDetail
+          path: ':id',
+          component: SingerDetail
         }
       ]
     },
@@ -42,17 +42,23 @@ export default new Router({
       path: '/rank',
       name: 'Rank',
       component: Rank,
-      children:[
+      children: [
         {
-          path:':id',
-          component:TopList
+          path: ':id',
+          component: TopList
         }
       ]
     },
     {
       path: '/search',
       name: 'Search',
-      component: Search
+      component: Search,
+      children: [
+        {
+          path: ':id',
+          component: SingerDetail
+        }
+      ]
     }
     //,
     // {
