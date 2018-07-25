@@ -1,6 +1,7 @@
 import * as types from './mutation-types'
 import { playMode } from "common/js/config";
 import { shuffle } from "common/js/util";
+import {saveSearch, clearSearch, deleteSearch} from 'common/js/cache'
 
 function findIndex(list, song) {
     return list.findIndex((item) => {
@@ -34,8 +35,8 @@ export const randomPlay = function ({ commit }, { list }) {
 }
 
 export const insertSong = function ({ commit, state }, song) {
-    let playList = state.playList
-    let sequenceList = state.sequenceList
+    let playList = state.playList.slice()
+    let sequenceList = state.sequenceList.slice()
     let currentIndex = state.currentIndex
 
     //记录当前歌曲
@@ -46,16 +47,16 @@ export const insertSong = function ({ commit, state }, song) {
     currentIndex++
     // 插入这首歌到当前索引位置
     playList.splice(currentIndex, 0, song)
-      // 如果已经包含了这首歌
+    // 如果已经包含了这首歌
     if (fpIndex > -1) {
-         // 如果当前插入的序号大于列表中的序号
+        // 如果当前插入的序号大于列表中的序号
         if (currentIndex > fpIndex) {
             //删除原来播放列表中已有的歌曲
-            playlist.splice(fpIndex, 1)
+            playList.splice(fpIndex, 1)
             currentIndex--
         } else {
             //fpIndex+1 插入一首歌 原来的下标往后移一位
-            playlist.splice(fpIndex + 1, 1)
+            playList.splice(fpIndex + 1, 1)
         }
     }
     //当前播放歌曲坐标+1
@@ -67,15 +68,27 @@ export const insertSong = function ({ commit, state }, song) {
     //如果存在这首歌
     if (fsIndex > -1) {
         if (currentSIndex > fsIndex) {
-          sequenceList.splice(fsIndex, 1)
+            sequenceList.splice(fsIndex, 1)
         } else {
-          sequenceList.splice(fsIndex + 1, 1)
+            sequenceList.splice(fsIndex + 1, 1)
         }
-      }
-    
-      commit(types.SET_PLAYLIST, playlist)
-      commit(types.SET_SEQUENCE_LIST, sequenceList)
-      commit(types.SET_CURRENT_INDEX, currentIndex)
-      commit(types.SET_FULL_SCREEN, true)
-      commit(types.SET_PLAYING_STATE, true)
+    }
+
+    commit(types.SET_PLAYLIST, playList)
+    commit(types.SET_SEQUENCE_LIST, sequenceList)
+    commit(types.SET_CURRENT_INDEX, currentIndex)
+    commit(types.SET_FULL_SCREEN, true)
+    commit(types.SET_PLAYING_STATE, true)
+}
+
+export const saveSearchHistory = function ({ commit }, query) {
+    commit(types.SET_SEARCH_HISTORY, saveSearch(query))
+}
+
+export const deleteSearchHistory = function ({ commit }, query) {
+    commit(types.SET_SEARCH_HISTORY, deleteSearch(query))
+}
+
+export const clearSearchHistory = function ({ commit }) {
+    commit(types.SET_SEARCH_HISTORY, clearSearch())
 }

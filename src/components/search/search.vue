@@ -3,8 +3,8 @@
     <div class="search-box-wrapper">
       <search-box ref="searchBox" @query="onQueryChange"></search-box>
     </div>
-    <div ref="shortcutWrapper" class="shortcut-wrapper"  v-show="!query">
-      <div  ref="shortcut" class="shortcut" >
+    <div ref="shortcutWrapper" class="shortcut-wrapper" v-show="!query">
+      <div ref="shortcut" class="shortcut">
         <div>
           <div class="hot-key">
             <h1 class="title">热门搜索</h1>
@@ -14,20 +14,20 @@
               </li>
             </ul>
           </div>
-          <!-- <div class="search-history" v-show="searchHistory.length">
+          <div class="search-history" v-show="searchHistory.length">
             <h1 class="title">
               <span class="text">搜索历史</span>
-              <span @click="showConfirm" class="clear">
+              <span @click="clearSearchHistory" class="clear">
                 <i class="icon-clear"></i>
               </span>
             </h1>
             <search-list @delete="deleteSearchHistory" @select="addQuery" :searches="searchHistory"></search-list>
-          </div> -->
+          </div>
         </div>
       </div>
     </div>
-    <div class="search-result"  v-show="query">
-      <suggest :query="query"></suggest>
+    <div class="search-result" v-show="query">
+      <suggest :query="query" @listScroll="blurInput" @select="saveSearch"></suggest>
     </div>
     <router-view></router-view>
   </div>
@@ -37,12 +37,15 @@
 import SearchBox from "base/search-box/search-box";
 import { getHotKey } from "api/search";
 import { ERR_OK } from "api/config";
-import Suggest from "components/suggest/suggest"
+import Suggest from "components/suggest/suggest";
+import { mapActions, mapGetters } from "vuex";
+import SearchList from "base/search-list/search-list";
+
 export default {
   data() {
     return {
       hotKey: [],
-      query:""
+      query: ""
     };
   },
   created() {
@@ -50,7 +53,11 @@ export default {
   },
   components: {
     SearchBox,
-    Suggest
+    Suggest,
+    SearchList
+  },
+  computed: {
+    ...mapGetters(["searchHistory"])
   },
   methods: {
     // handlePlaylist(playlist) {
@@ -62,14 +69,18 @@ export default {
     //   this.$refs.shortcutWrapper.style.bottom = bottom;
     //   this.$refs.shortcut.refresh();
     // },
-    // showConfirm() {
-    //   this.$refs.confirm.show();
-    // },
-    onQueryChange(query){
-      this.query=query;
+    
+    onQueryChange(query) {
+      this.query = query;
     },
-    addQuery(query){
-      this.$refs.searchBox.setQuery(query)
+    addQuery(query) {
+      this.$refs.searchBox.setQuery(query);
+    },
+    blurInput() {
+      this.$refs.searchBox.blur();
+    },
+    saveSearch() {
+      this.saveSearchHistory(this.query);
     },
     _getHotKey() {
       getHotKey().then(res => {
@@ -78,7 +89,12 @@ export default {
         }
       });
     },
-    //...mapActions(["clearSearchHistory"])
+
+    ...mapActions([
+      "saveSearchHistory",
+      "deleteSearchHistory",
+      "clearSearchHistory"
+    ])
   }
 };
 </script>

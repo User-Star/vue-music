@@ -106,6 +106,11 @@
             }
           })
         }
+        if(this.beforeScroll){
+          this.scroll.on("beforeScrollStart",()=>{
+            this.$emit("beforeScroll")
+          })
+        }
       },
       disable() {
         // 代理better-scroll的disable方法

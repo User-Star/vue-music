@@ -77,15 +77,15 @@ export default {
         background-size: 25px 24px;
 
         &.icon0 {
-          bg-image('first@3x');
+          bg-image('first');
         }
 
         &.icon1 {
-          bg-image('second@3x');
+          bg-image('second');
         }
 
         &.icon2 {
-          bg-image('third@3x');
+          bg-image('third');
         }
       }
 

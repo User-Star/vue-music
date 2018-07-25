@@ -66,7 +66,7 @@ const devWebpackConfig = merge(baseWebpackConfig, {
           //console.log(response.data)
           res.json(response.data)
         }).catch((e) => {
-          console.log(e)
+          console.log("time out")
         })
       });
       app.get('/api/getMusicUrl', function (req, res) {
@@ -81,7 +81,7 @@ const devWebpackConfig = merge(baseWebpackConfig, {
           //console.log(response.data)
           res.json(response.data)
         }).catch((e) => {
-          console.log(e)
+          console.log("time out")
         })
       });
       app.get('/api/lyric', function (req, res) {
@@ -94,17 +94,16 @@ const devWebpackConfig = merge(baseWebpackConfig, {
           },
           params: req.query
         }).then((response) => {
-          var ret = response.data
+          var ret = response.data 
           if (typeof ret === 'string') {
-            var reg = /^\w+\(({[^()]+})\)$/
-            var matches = ret.match(reg)
+            var matches = ret.replace(/[_$\w\d]{0,}\(/,"").replace(/\)$/,"");
             if (matches) {
-              ret = JSON.parse(matches[1])
+              ret = JSON.parse(matches)
             }
           }
           res.json(ret)
         }).catch((e) => {
-          console.log(e)
+          console.log("time out")
         })
       });
       app.get('/api/getSongList', (req, res) => {
@@ -116,12 +115,33 @@ const devWebpackConfig = merge(baseWebpackConfig, {
           },
           params: req.query
         }).then((response) => {
-          //console.log(response.data)
           res.json(response.data)
         }).catch((e) => {
-          console.log(e)
+          console.log("time out")
         })
-      })
+      }),
+        app.get('/api/search', (req, res) => {
+          var url = 'https://c.y.qq.com/soso/fcgi-bin/search_for_qq_cp'
+          axios.get(url, {
+            headers: {
+              referer: 'https://y.qq.com/portal/player.html',
+              host: 'c.y.qq.com'
+            },
+            params: req.query
+          }).then((response) => {
+            var ret = response.data
+            
+            if (typeof ret === 'string') {
+              var matches = ret.replace(/[_$\w\d]{0,}\(/,"").replace(/\)$/,"");
+              if (matches) {
+                ret = JSON.parse(matches)
+              }
+            }
+            res.json(ret)
+          }).catch((e) => {
+            console.log("time out")
+          })
+        })
     }
   },
   plugins: [
