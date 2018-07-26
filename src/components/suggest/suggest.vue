@@ -111,7 +111,11 @@ export default {
     },
     _genResult(data) {
       let ret = [];
-      if (data.zhida && data.zhida.singerid) {
+      let b= !this.result.length
+      if(!b){
+        b=this.result[0].type!=="singer"
+      }
+      if (b&&data.zhida && data.zhida.singerid) {
         ret.push({ ...data.zhida, ...{ type: TYPE_SINGER } });
       }
       if (data.song) {

@@ -16,7 +16,7 @@
           <div class="middle-l" ref="middleL">
             <div class="cd-wrapper" ref="cdWrapper">
               <div class="cd" :class="cdCls">
-                <img class="image" :src="currentSong.image">
+                <img class="image" ref="songImage" :src="currentSong.image" :onerror='reload'>
               </div>
             </div>
             <div class="playing-lyric-wrapper">
@@ -66,7 +66,7 @@
     <transition name="mini">
       <div class="mini-player" v-show="!fullScreen" @click="open">
         <div class="icon">
-          <img width="40" height="40" :class="cdCls" :src="currentSong.image">
+          <img width="40" height="40" :class="cdCls" :src="currentSong.image" :onerror='reload'>
         </div>
         <div class="text">
           <h2 class="name" v-html="currentSong.name"></h2>
@@ -110,7 +110,8 @@ export default {
       currentLyric: null,
       currentLineNum: 0,
       currentShow: "cd",
-      playingLyric: ""
+      playingLyric: "",
+      reload: 'this.src="' + require("./logo@2x.png") + '"'
     };
   },
   created() {
@@ -459,7 +460,7 @@ export default {
       }
       setTimeout(() => {
         this._musicPlay();
-      },1000);
+      }, 1000);
     },
     playing(newPlaying) {
       const sudio = this.$refs.audio;
