@@ -4,29 +4,29 @@
             <div class="list-wrapper" @click.stop>
                 <div class="list-header">
                     <h1 class="title">
-                        <i class="icon"></i>
-                        <span class="text"></span>
-                        <span class="clear">
+                        <i class="icon" :class="iconMode" @click="changeMode"></i>
+                        <span class="text">{{modeText}}</span>
+                        <span class="clear" @click="showConfirm">
                             <i class="icon-clear"></i>
                         </span>
                     </h1>
                 </div>
-                <scroll :data="sequenceList" ref="listContent" class="list-content">
-                    <ul ref="list" name="list">
-                        <li ref="listItem" @click="selectItem(item,index)" class="item" v-for="(item,index) in sequenceList" :key="index">
+                <scroll :data="sequenceList" ref="listContent" class="list-content" :refreshDelay="refreshDelay">
+                    <transition-group ref="list" name="list" tag="ul">
+                        <li ref="listItem" @click="selectItem(item,index)" class="item" v-for="(item,index) in sequenceList" :key="item.id">
                             <i class="current" :class="getCurrentIcon(item)"></i>
                             <span class="text">{{item.name}}</span>
                             <span class="like">
                                 <i></i>
                             </span>
-                            <span class="delete" @click="deleteOne(item)">
+                            <span class="delete" @click.stop="deleteOne(item)">
                                 <i class="icon-delete"></i>
                             </span>
                         </li>
-                    </ul>
+                    </transition-group>
                 </scroll>
                 <div class="list-operate">
-                    <div class="add">
+                    <div class="add" @click="addSong">
                         <i class="icon-add"></i>
                         <span class="text">添加歌曲到队列</span>
                     </div>
@@ -35,18 +35,18 @@
                     <span>关闭</span>
                 </div>
             </div>
-            <confirm ref="confirm" text="是否清空播放列表" confirmBtnText="清空"></confirm>
-            <!-- <add-song ref="addSong"></add-song> -->
+            <confirm @confirm="confirmClear" ref="confirm" text="是否清空播放列表" confirmBtnText="清空"></confirm>
+            <add-song ref="addSong"></add-song>
         </div>
     </transition>
 </template>
 
 <script type="text/ecmascript-6">
-import { mapActions, mapGetters,mapMutations} from "vuex";
+import { mapActions, mapGetters, mapMutations } from "vuex";
 import { playMode } from "common/js/config";
 import Scroll from "base/scroll/scroll";
 import Confirm from "base/confirm/confirm";
-//import AddSong from 'components/add-song/add-song'
+import AddSong from 'components/add-song/add-song'
 import { playerMixin } from "common/js/mixin";
 
 export default {
@@ -62,13 +62,8 @@ export default {
       return this.mode === playMode.sequence
         ? "顺序播放"
         : this.mode === playMode.random ? "随机播放" : "单曲循环";
-    },
-    ...mapGetters([
-        "sequenceList",
-        "currentSong",
-        "playList",
-        "mode"
-        ])
+    }
+    
   },
   methods: {
     show() {
@@ -85,6 +80,7 @@ export default {
       this.$refs.confirm.show();
     },
     confirmClear() {
+        this.$emit("pause")
       this.deleteSongList();
       this.hide();
     },
@@ -107,10 +103,7 @@ export default {
       const index = this.sequenceList.findIndex(song => {
         return current.id === song.id;
       });
-      this.$refs.listContent.scrollToElement(
-        this.$refs.listItem[index],
-        300
-      );
+      this.$refs.listContent.scrollToElement(this.$refs.listItem[index], 300);
     },
     deleteOne(item) {
       this.deleteSong(item);
@@ -122,8 +115,8 @@ export default {
       this.$refs.addSong.show();
     },
     ...mapMutations({
-        setCurrentIndex:"SET_CURRENT_INDEX",
-        setPlayingState:"SET_PLAYING_STATE"
+      setCurrentIndex: "SET_CURRENT_INDEX",
+      setPlayingState: "SET_PLAYING_STATE"
     }),
     ...mapActions(["deleteSong", "deleteSongList"])
   },
@@ -139,7 +132,8 @@ export default {
   },
   components: {
     Scroll,
-    Confirm
+    Confirm,
+    AddSong
   }
 };
 </script>
@@ -223,7 +217,7 @@ export default {
                 overflow: hidden;
 
                 &.list-enter-active, &.list-leave-active {
-                    transition: all 0.1s;
+                    transition: all 0.1s linear;
                 }
 
                 &.list-enter, &.list-leave-to {

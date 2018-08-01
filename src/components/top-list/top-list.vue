@@ -32,7 +32,6 @@ export default {
   },
   created() {
     this._getMusicList();
-    console.log(this.rank)
   },
   methods: {
     _getMusicList() {
