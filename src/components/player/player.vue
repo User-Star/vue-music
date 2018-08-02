@@ -57,7 +57,7 @@
               <i @click="next" class="icon-next"></i>
             </div>
             <div class="icon i-right">
-              <i class="icon" ></i>
+              <i class="icon"></i>
               <!-- :class="getFavoriteIcon(currentSong)" @click="toggleFavorite(currentSong)" -->
             </div>
           </div>
@@ -89,7 +89,7 @@
 </template>
 
 <script type="text/ecmascript-6">
-import { mapGetters, mapMutations,mapActions } from "vuex";
+import { mapGetters, mapMutations, mapActions } from "vuex";
 import animations from "create-keyframe-animation";
 import { prefixStyle } from "common/js/dom";
 import { getMusicUrl } from "api/song";
@@ -101,12 +101,12 @@ import { shuffle } from "common/js/util";
 import Lyric from "lyric-parser";
 import Scroll from "base/scroll/scroll";
 import PlayList from "components/play-list/play-list";
-import {playerMixin} from "common/js/mixin";
+import { playerMixin } from "common/js/mixin";
 
 const transform = prefixStyle("transform");
 const transitionDuration = prefixStyle("transitionDuration");
 export default {
-  mixins:[playerMixin],
+  mixins: [playerMixin],
   data() {
     return {
       songReady: false,
@@ -184,28 +184,30 @@ export default {
       }
     },
     _play() {
+      this.getLyric();
       setTimeout(() => {
-        this.getLyric();
         this.$refs.audio.play();
       }, 20);
     },
-    _pause(){
+    _pause() {
       this.$refs.audio.pause();
     },
     getLyric() {
-      this.currentSong
-        .getLyric()
-        .then(lyric => {
-          this.currentLyric = new Lyric(lyric, this.handleLyric);
-          if (this.playing) {
-            this.currentLyric.play();
-          }
-        })
-        .catch(() => {
-          this.currentLyric = null;
-          this.playingLyric = "";
-          this.currentLineNum = 0;
-        });
+      setTimeout(() => {
+        this.currentSong
+          .getLyric()
+          .then(lyric => {
+            this.currentLyric = new Lyric(lyric, this.handleLyric);
+            if (this.playing) {
+              this.currentLyric.play();
+            }
+          })
+          .catch(() => {
+            this.currentLyric = null;
+            this.playingLyric = "";
+            this.currentLineNum = 0;
+          });
+      }, 20);
     },
     handleLyric({ lineNum, txt }) {
       this.currentLineNum = lineNum;
@@ -229,6 +231,7 @@ export default {
           index = 0;
         }
         this.setCurrentIndex(index);
+        this.getLyric();
         if (!this.playing) {
           this.togglePlaying();
         }
@@ -248,6 +251,7 @@ export default {
           index = this.playList.length - 1;
         }
         this.setCurrentIndex(index);
+        this.getLyric();
         if (!this.playing) {
           this.togglePlaying();
         }
@@ -256,7 +260,7 @@ export default {
     },
     ready() {
       this.songReady = true;
-      this.savePlayHistory(this.currentSong)
+      this.savePlayHistory(this.currentSong);
     },
     error() {
       if (RegExp(this.currentSong.mid).exec(this.$refs.audio.src)) {
@@ -418,9 +422,7 @@ export default {
       setPlayMode: "SET_PLAY_MODE",
       setPlayList: "SET_PLAYLIST"
     }),
-    ...mapActions([
-      "savePlayHistory"
-    ])
+    ...mapActions(["savePlayHistory"])
   },
   computed: {
     cdCls() {
@@ -438,11 +440,7 @@ export default {
     percent() {
       return this.currentTime / this.currentSong.duration;
     },
-    ...mapGetters([
-      "fullScreen",
-      "playing",
-      "currentIndex"
-    ])
+    ...mapGetters(["fullScreen", "playing", "currentIndex"])
   },
   watch: {
     currentSong(newSong, oldSong) {
