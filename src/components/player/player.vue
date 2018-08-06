@@ -83,7 +83,7 @@
       </div>
     </transition>
     <play-list ref="playlist" @pause="_pause()"></play-list>
-    <audio :src="currentSong.url" @canplay="ready" @error="error" @timeupdate="updateTime" @ended="end" ref="audio"></audio>
+    <audio :src="currentSong.url" @play="ready" @error="error" @timeupdate="updateTime" @ended="end" ref="audio"></audio>
   </div>
 </template>
 
@@ -100,7 +100,7 @@ import { shuffle } from "common/js/util";
 import Lyric from "lyric-parser";
 import Scroll from "base/scroll/scroll";
 import PlayList from "components/play-list/play-list";
-import { playerMixin} from "common/js/mixin";
+import { playerMixin } from "common/js/mixin";
 
 const transform = prefixStyle("transform");
 const transitionDuration = prefixStyle("transitionDuration");
@@ -179,23 +179,30 @@ export default {
       }
       this.setPlayingState(!this.playing);
       if (this.currentLyric) {
-        this.currentLyric.togglePlay();
+         this.currentLyric.togglePlay();
       }
     },
     _play() {
-      this.getLyric();
       setTimeout(() => {
         this.$refs.audio.play();
+        this.setPlayingState(true);
+        this.getLyric();
       }, 20);
     },
     _pause() {
       this.$refs.audio.pause();
+      this.setPlayingState(false);
     },
+
     getLyric() {
-      setTimeout(() => {
+      clearTimeout(this.t)
+      this.t=setTimeout(() => {
         this.currentSong
           .getLyric()
           .then(lyric => {
+            if (this.currentSong.lyric !== lyric) {
+              return;
+            }
             this.currentLyric = new Lyric(lyric, this.handleLyric);
             if (this.playing) {
               this.currentLyric.play();
@@ -206,7 +213,7 @@ export default {
             this.playingLyric = "";
             this.currentLineNum = 0;
           });
-      }, 20);
+      }, 800);
     },
     handleLyric({ lineNum, txt }) {
       this.currentLineNum = lineNum;
@@ -224,15 +231,21 @@ export default {
       }
       if (this.playList.length === 1) {
         this.loop();
+        return
       } else {
+        if (this.currentLyric) {
+          this.currentLyric.stop();
+          this.currentTime = 0;
+          this.playingLyric = "";
+          this.currentLineNum = 0;
+        }
         let index = this.currentIndex + 1;
         if (index === this.playList.length) {
           index = 0;
         }
         this.setCurrentIndex(index);
-        this.getLyric();
         if (!this.playing) {
-          this.togglePlaying();
+          this._play();
         }
       }
 
@@ -244,15 +257,21 @@ export default {
       }
       if (this.playList.length === 1) {
         this.loop();
+        return
       } else {
+         if (this.currentLyric) {
+          this.currentLyric.stop();
+          this.currentTime = 0;
+          this.playingLyric = "";
+          this.currentLineNum = 0;
+        }
         let index = this.currentIndex - 1;
         if (index === -1) {
           index = this.playList.length - 1;
         }
         this.setCurrentIndex(index);
-        this.getLyric();
         if (!this.playing) {
-          this.togglePlaying();
+          this._play();
         }
       }
       this.songReady = false;
@@ -453,9 +472,11 @@ export default {
         this.playingLyric = "";
         this.currentLineNum = 0;
       }
-      setTimeout(() => {
-        this._musicPlay();
-      }, 1000);
+      //clearTimeout(this.timer)
+      this._musicPlay();
+      // let timer= setTimeout(() => {
+
+      // }, 1000);
     },
     playing(newPlaying) {
       const sudio = this.$refs.audio;
