@@ -422,13 +422,13 @@ export default {
     _musicPlay() {
       if (!this.currentSong.url) {
         getMusicUrl(this.currentSong).then(res => {
+          console.log(res)
           if (res.code === ERR_OK) {
             this.setMusicUrl(res.data.musicUrl);
-            this._play();
           }
         });
       } else {
-        this.$refs.audio.play();
+        this._play();
       }
     },
 
@@ -472,11 +472,7 @@ export default {
         this.playingLyric = "";
         this.currentLineNum = 0;
       }
-      //clearTimeout(this.timer)
       this._musicPlay();
-      // let timer= setTimeout(() => {
-
-      // }, 1000);
     },
     playing(newPlaying) {
       const sudio = this.$refs.audio;
