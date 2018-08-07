@@ -422,9 +422,9 @@ export default {
     _musicPlay() {
       if (!this.currentSong.url) {
         getMusicUrl(this.currentSong).then(res => {
-          console.log(res)
           if (res.code === ERR_OK) {
             this.setMusicUrl(res.data.musicUrl);
+            this._play();
           }
         });
       } else {
